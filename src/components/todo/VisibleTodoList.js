@@ -5,44 +5,37 @@
 import { connect } from 'react-redux';
 import TodoList from './TodoList';
 
+import * as todoAction from '../../actions/todoAction';
+
 function getVisibleTodos (todos, filter) {
   switch (filter) {
     case 'SHOW_ALL':
       return todos;
-      break;
     case 'COMPLETED':
-      return todos.map((todo) => {
-        if (todo.isCompleted) {
-          return todo;
-        } else {
-          return undefined;
-        }
+      const completedTodos = todos.filter((todo) => {
+        return todo.isCompleted;
       });
-      break;
+      return completedTodos;
     case 'ACTIVE':
-      return todos.map((todo) => {
-        if (!todo.isCompleted) {
-          return todo;
-        } else {
-          return undefined;
-        }
+      const activeTodos = todos.filter((todo) => {
+        return !todo.isCompleted;
       });
-      break;
+      return activeTodos;
     default:
       return todos;
   }
 }
 
-const mapStateToProps = (todos, filter) => {
+const mapStateToProps = (store) => {
   return {
-    todos: getVisibleTodos(todos, filter)
+    todos: getVisibleTodos(store.todos, store.visibleFilter)
   }
 };
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    onTodoClick: (id) => {
-      // todo dispath an action
+    onToSetCompleted: ({id, isCompleted}) => {
+      dispatch(todoAction.setCompleted({id, isCompleted}));
     }
   };
 }

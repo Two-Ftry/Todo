@@ -2,15 +2,17 @@ require('normalize.css/normalize.css');
 require('styles/App.css');
 
 import React from 'react';
-import TodoList from './todo/TodoList';
-
-// let yeomanImage = require('../images/yeoman.png');
+import VisibleAddTodo from './todo/VisibleAddTodo';
+import VisibleTodoList from './todo/VisibleTodoList';
+import VisibleFilter from './todo/VisibleFiler';
 
 class AppComponent extends React.Component {
   render() {
     return (
       <div className="index">
-        <TodoList />
+        <VisibleAddTodo />
+        <VisibleTodoList />
+        <VisibleFilter />
       </div>
     );
   }
