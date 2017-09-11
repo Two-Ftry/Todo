@@ -1,56 +1,65 @@
 
 import { combineReducers } from 'redux';
-import * as actionTypes from '../actions/actionTypes';
+import {
+  SELECTED_SUBREDDIT,
+  INVALIDATE_SUBREDDIT,
+  REQUEST_POST,
+  RECEIVE_POST
+} from '../actions/actions';
 
-/**
- * 设置todo项是否完成
- * @param {Array} todos 
- * @param {Object} item 
- */
-const setTodoItemCompleted = (todos, todo) => {
-    for (let i = 0, len = todos.length; i < len; i++) {
-        const item = todos[i];
-        if (item.id === todo.id && item.isCompleted !== todo.isCompleted) {
-            item.isCompleted = todo.isCompleted;
-            break;
-        }
-    }
-    return todos;
-};
-
-const todos = (state = [], action) => {
+const selectedSubreddit = (state = 'reactjs', action) => {
     switch (action.type) {
-        case actionTypes.ADD_TODO:
-            return [
-                ...state,
-                {
-                    id: state.length + '',
-                    name: action.item,
-                    isCompleted: false
-                }
-            ];
-        break;
-        case actionTypes.SET_COMPLETED:
-            const todos = [...state];
-            return setTodoItemCompleted(todos, action.todoItem);
-        break;
-        default:
-            return state
-    }
-}
-
-const visibleFilter = (state = 'SHOW_ALL', action) => {
-    switch (action.type) {
-        case actionTypes.VISIBLE_FILTER:
-            return action.text;
+        case SELECTED_SUBREDDIT:
+            return action.subreddit;
         default:
             return state;
     }
+};
+
+const getPosts = (state = {
+  isFetching: false,
+  didInvalidate: false,
+  items: []
+}, action) => {
+  switch (action.type) {
+    case INVALIDATE_SUBREDDIT:
+      return Object.assign({}, state, {
+        didInvalidate: true
+      });
+    case REQUEST_POST:
+      return Object.assign({}, state, {
+        isFetching: true,
+        didInvalidate: false
+      });
+    case RECEIVE_POST:
+      const obj = Object.assign({}, state, {
+        isFetching: false,
+        didInvalidate: false,
+        items: action.items,
+        lastUpdated: action.receiveAt
+      });
+      return obj;
+    default:
+      return state;
+  }
+};
+
+const postsBySubreddit = (state = {}, action) => {
+  switch(action.type) {
+    case INVALIDATE_SUBREDDIT:
+    case REQUEST_POST:
+    case RECEIVE_POST:
+      return Object.assign({}, state, {
+        [action.subreddit]: getPosts(state[action.subreddit], action)
+      });
+    default:
+      return state;
+  }
 }
 
 const reducers = combineReducers({
-    visibleFilter,
-    todos
+  selectedSubreddit,
+  postsBySubreddit
 });
 
 export default reducers;
