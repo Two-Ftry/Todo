@@ -7,6 +7,8 @@ import './App.css';
 
 // import Example from './UrlParamExample';
 
-import Example from './RedirectExample';
+// import Example from './RedirectExample';
+
+import Example from './RouteExample';
 
 export default Example;
