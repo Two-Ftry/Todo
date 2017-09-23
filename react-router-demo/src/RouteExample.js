@@ -25,7 +25,7 @@ const CustomLink = ({ to, name }) => {
         <Route path={to} children={({ match }) => {
             console.log('@@@match', match);
             return (
-                <div className={ match ? 'active' : ''}>
+                <div className={match ? 'active' : ''}>
                     {match ? '>' : ''}<Link to={to}>{name}</Link>
                 </div>
             );
@@ -34,10 +34,30 @@ const CustomLink = ({ to, name }) => {
     );
 };
 
-class CustomLinkExample extends Component {
+class RouterChild extends Component {
     render () {
         return (
-            <Router>
+            <div>router children</div>
+        );
+    }
+}
+
+const getConfirmation = (message, callback) => {
+    // const allowTransition = window.confirm(message)
+    callback('0000')
+};
+
+class CustomLinkExample extends Component {
+    handleConfirmation (result) {
+        // todo something
+        console.log(result);
+    }
+    render () {
+        return (
+            <Router basename="connecterp-lapp"
+                getUserConfirmation={getConfirmation('111', this.handleConfirmation)}
+                children={RouterChild}
+            >
                 <div>
                     <ul>
                         <li><CustomLink to="/home" name="Home" /></li>
