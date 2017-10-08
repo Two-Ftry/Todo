@@ -1,5 +1,10 @@
 import React from 'react';
 
+import indexedDBUtil from '../../db/indexedDBUtil';
+
+const databaseName = 'my-record';
+const storeName = 'record-item';
+
 class AddTodo extends React.Component {
     constructor (props) {
         super(props);
@@ -22,6 +27,16 @@ class AddTodo extends React.Component {
 
     handleClick () {
         this.props.handleAddTodo && this.props.handleAddTodo(this.state.text);
+        indexedDBUtil.add(databaseName, storeName, {
+          id: Date.now() + '',
+          name: this.state.text
+        }, 'id');
+        indexedDBUtil.getListByText(databaseName, storeName, 'name', '1').then((data) => {
+          console.log('@@data@@', data);
+        }, (event) => {
+          console.log('event', event);
+          alert('error on getListByText')
+        })
         this.clear();
     }
 

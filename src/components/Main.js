@@ -7,8 +7,6 @@ import VisibleTodoList from './todo/VisibleTodoList';
 import VisibleFilter from './todo/VisibleFiler';
 import Clock from './Clock';
 
-import dbUtil from '../db/dbUtil';
-
 class AppComponent extends React.Component {
   render () {
     return (

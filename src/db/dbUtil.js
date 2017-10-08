@@ -1,89 +1,123 @@
-// 数据库对象
-const indexedDB = window.indexedDB || window.msIndexedDB || window.mozIndexedDB || window.webkitIndexedDB;
 
-// 事物对象标记
-const IDBTransaction = window.IDBTransaction || window.webkitIDBTransaction;
+//
+let version = localStorage.getItem('dbversion');
+if (!version) {
+  localStorage.setItem('dbversion',  '1');
+} else {
+  version = parseInt(version) + 1;
+  localStorage.setItem('dbversion',  version + '');
+}
 
-const dbUtil = {
-    db: null,
-    open (dbName, cb) {
-        const request = indexedDB.open(dbName);
-        request.onerror = (event) => {
-            console.log('open db error', event);
-        };
-        request.onsuccess = (event) => {
-            this.db = event.target.result;
-            cb && cb();
-        }
-    },
-    __transaction (tableNames, flag) {
-        console.log('@@@', this.db);
-        if (!this.db) {
-            return;
-        }
-        const transaction = this.db.transaction(tableNames, flag);
-        transaction.onerror = (event) => {
-            console.log('transaction error', event);
-        };
-        transaction.oncomplete = (event) => {
-            console.log('transaction oncomplete', event);
-        };
-        return transaction;
-    },
-    // 创建数据库
-    createObjectStore (tableName, keyPath, cb) {
 
-        if (!this.db) {
-            return;
-        }
-        const request = this.db.createObjectStore(tableName, { keyPath });
-        request.onerror = (event) => {
-            console.log('createObjectStore onerror', event);
-        };
-        request.onsuccess = (event) => {
-            console.log('createObjectStore onsuccess', event);
-            cb && cb();
-        };
-    },
-    get (tableName, key, flag = IDBTransaction.READ_ONLY) {
+// 1、获取indexedDB对象
+const indexedDB = window.indexedDB || window.msIndexedDb || window.mozIndexedDB || window.webkitIndexedDB;
+const IDBTransaction = window.IDBTransaction || window.WebkitIDBTransaction || { READ_WRITE: 'readwrite'};
 
-        const transaction = this.__transaction(tableName, flag);
-        if (!transaction) {
-            return;
-        }
-        const store = transaction.objectStore(tableName);
-        const request = store.get(key);
-        request.onerror = (event) => {
-            console.log('get onerror', event);
-        };
-        request.onsuccess = (event) => {
-            console.log('get onsuccess', event);
-        };
-    },
-    add (tableName, key, flag = IDBTransaction.READ_WRITE) {
-        const transaction = this.__transaction(tableName, flag);
-        if (!transaction) {
-            return;
-        }
-        const store = transaction.objectStore(tableName);
-        const request = store.add(key);
-        request.onerror = (event) => {
-            console.log('add onerror', event);
-        };
-        request.onsuccess = (event) => {
-            console.log('add onsuccess', event);
-        };
+// 2、建立数据库连接
+let database = null;
+const databaseName = 'record';
+const storeName = 'record-item';
+const request = indexedDB.open(databaseName, version + '.0');
+
+request.onsuccess = (event) => {
+  database = event.target.result;
+  // alert(`open database ${databaseName} success`);
+
+  database.onversionchange = () => {
+    database.close();
+    console.log('close database');
+  }
+
+  // 3、设置版本号
+  // const request2 = database.setVersion('1.0');
+  // request2.blocked = (event) => {
+  //   alert(`setVersion error, errorCode: ${event.target.errorCode}`)
+  // }
+  // request2.onsuccess = () => {
+  //   alert(`setVersion success`);
+  // }
+
+  database.transaction(storeName, 'readwrite').objectStore(storeName).add({
+    id: Date.now() + '',
+    name: '000000',
+    age: 8888
+  });
+  // 删除
+  database.transaction(storeName, 'readwrite').objectStore(storeName).delete('0001');
+  // 修改
+  database.transaction(storeName, 'readwrite').objectStore(storeName).put({
+    id: '1506934056416',
+    name: '1111',
+    age: 27
+  });
+  // 获取
+  const req1 = database.transaction(storeName, 'readwrite').objectStore(storeName).get('1506934056416');
+  req1.onerror = () => {
+    alert('did not get the object')
+  };
+  req1.onsuccess = (event) => {
+      console.log(event.target.result.name)
+  };
+  // 清空
+  // database.transaction(storeName, 'readwrite').objectStore(storeName).clear();
+
+  const s = database.transaction(storeName, 'readwrite').objectStore(storeName);
+  // s.createIndex('nameindex', 'name', { unique: false});
+  const req = s.openCursor();
+  req.onsuccess = (event) => {
+    const cursor = event.target.result;
+    if (cursor) {
+      console.log('value:', JSON.stringify(cursor.value));
+      cursor.continue();
+    } else {
+      console.log('Done');
     }
+  };
+  req.onerror = () => {
+    alert('openCursor error');
+  }
+
+  // 索引
+  const nameIndex = s.index('nameindex');
+  const indexReq = nameIndex.openCursor();
+  indexReq.onsuccess = (event) => {
+    const cursor = event.target.result;
+    if (cursor) {
+      console.log('index value:', JSON.stringify(cursor.value));
+      cursor.continue();
+    } else {
+      alert('Done');
+    }
+  }
+  indexReq.onerror = () => {
+    alert('open index Cursor error');
+  }
+
+}
+request.onupgradeneeded = (e) => {
+  database = e.target.result;
+  let store = null;
+  if(!database.objectStoreNames.contains(storeName)){
+    // this.store = this.db.createObjectStore(storeName, { keyPath: 'key'});
+    store = database.createObjectStore(storeName, { keyPath: 'id'});
+    store.createIndex('nameindex', 'name', { unique: false});
+  } else {
+    // database.deleteObjectStore(storeName);
+    // store.deleteIndex('nameindex');
+  }
+
+  if (store){
+    store.createIndex('nameindex', 'name', { unique: false});
+    store.add({
+      id: '0001',
+      name: 'jianfeng_huang',
+      age: 27
+    });
+  }
+}
+
+request.onerror = (event) => {
+  alert(`open error errorCode:${event.target.errorCode}`)
 };
 
-dbUtil.open('users', () => {
-    dbUtil.createObjectStore('users', { keyPath: 'id' }, () => {
-        dbUtil.add('users', {
-            id: '001',
-            name: '888'
-        });
-        console.log('@@@@', dbUtil.get('001'));
-    });
-});
-
-export default dbUtil;
+export default {};
