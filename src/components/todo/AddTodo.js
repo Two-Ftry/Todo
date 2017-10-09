@@ -31,12 +31,12 @@ class AddTodo extends React.Component {
           id: Date.now() + '',
           name: this.state.text
         }, 'id');
-        indexedDBUtil.getListByText(databaseName, storeName, 'name', '1').then((data) => {
-          console.log('@@data@@', data);
-        }, (event) => {
-          console.log('event', event);
-          alert('error on getListByText')
-        })
+        // indexedDBUtil.getListByText(databaseName, storeName, 'name', '1').then((data) => {
+        //   console.log('@@data@@', data);
+        // }, (event) => {
+        //   console.log('event', event);
+        //   alert('error on getListByText')
+        // })
         this.clear();
     }
 

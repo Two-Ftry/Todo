@@ -6,6 +6,7 @@ import VisibleAddTodo from './todo/VisibleAddTodo';
 import VisibleTodoList from './todo/VisibleTodoList';
 import VisibleFilter from './todo/VisibleFiler';
 import Clock from './Clock';
+import SearchList from './search/SearchList';
 
 class AppComponent extends React.Component {
   render () {
@@ -15,6 +16,7 @@ class AppComponent extends React.Component {
         <VisibleTodoList />
         <VisibleFilter />
         <Clock />
+        <SearchList />
       </div>
     );
   }

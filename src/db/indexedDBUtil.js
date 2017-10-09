@@ -51,7 +51,7 @@ const indexedDBUtil = {
       this.__open(databaseName, () => {
         // success
         const store = this.database.transaction(storeName, readwrite || this.__IDBTransaction.READ_WRITE).objectStore(storeName);
-        debugger
+
         resolve(store);
       }, () => {
         // upgrade
@@ -59,7 +59,7 @@ const indexedDBUtil = {
         if (!this.database.objectStoreNames.contains(storeName)) {
           store = this.database.createObjectStore(storeName, { keyPath: keyPath || 'id'});
         }
-        debugger
+
         if (store){
           resolve(store);
         }
